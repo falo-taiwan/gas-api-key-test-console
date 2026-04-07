@@ -1,0 +1,1692 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multi-Model API Key Test Console v1.02：執行頁</title>
+  <meta name="description" content="教學版執行頁，專門用於測試 GAS Web App、登入、模型切換與 debug 回傳。">
+  <meta name="author" content="Force Cheng">
+  <meta name="copyright" content="© Force Cheng × FALO 2026">
+  <meta name="robots" content="index, follow">
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --surface: #ffffff;
+      --border: #d8e0ef;
+      --text: #162033;
+      --muted: #5b6780;
+      --primary: #165dff;
+      --primary-soft: #eaf1ff;
+      --success: #0f9d58;
+      --danger: #b42318;
+      --shadow: 0 20px 45px rgba(22, 32, 51, 0.08);
+      --radius-lg: 24px;
+      --radius-md: 16px;
+      --max-width: 1180px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(22, 93, 255, 0.08), transparent 30%),
+        linear-gradient(180deg, #f8fbff 0%, #f4f6fb 100%);
+      color: var(--text);
+      line-height: 1.8;
+    }
+
+    a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .page {
+      width: min(calc(100% - 32px), var(--max-width));
+      margin: 0 auto;
+      padding: 28px 0 72px;
+    }
+
+    .hero,
+    .section,
+    .panel {
+      background: rgba(255, 255, 255, 0.96);
+      border: 1px solid rgba(216, 224, 239, 0.95);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      padding: 36px;
+      margin-bottom: 24px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      padding: 8px 14px;
+      background: var(--primary-soft);
+      color: var(--primary);
+      border-radius: 999px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(2rem, 4vw, 3rem);
+      line-height: 1.18;
+      letter-spacing: -0.02em;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 1.04rem;
+    }
+
+    .tab-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 22px;
+    }
+
+    .hero-note {
+      margin-top: 18px;
+      padding: 14px 16px;
+      border: 1px solid #d7e4ff;
+      border-radius: 14px;
+      background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
+      color: #31415f;
+    }
+
+    .tab-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 124px;
+      padding: 11px 16px;
+      border-radius: 12px;
+      border: 1px solid #d5def1;
+      background: #fff;
+      color: #244278;
+      font-weight: 700;
+    }
+
+    .tab-link.is-active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    .section {
+      padding: 30px;
+      margin-bottom: 18px;
+    }
+
+    .section h2 {
+      margin: 0 0 12px;
+      font-size: 1.5rem;
+    }
+
+    .teaching-box {
+      background: linear-gradient(180deg, #fffdf7 0%, #fff8e8 100%);
+      border: 1px solid #f0dfb2;
+      border-radius: var(--radius-md);
+      padding: 16px 18px;
+      margin: 16px 0 18px;
+    }
+
+    .teaching-box p {
+      margin: 0 0 6px;
+    }
+
+    .teaching-box p:last-child {
+      margin-bottom: 0;
+    }
+
+    .playground-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.08fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      padding: 20px;
+    }
+
+    .field-grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .field label,
+    .field legend {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 700;
+      color: #213556;
+    }
+
+    .field-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+
+    .field-head label {
+      margin-bottom: 0;
+    }
+
+    .field small {
+      display: block;
+      margin-top: 6px;
+      color: var(--muted);
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      border: 1px solid #cfd9ec;
+      border-radius: 12px;
+      padding: 12px 14px;
+      font: inherit;
+      color: var(--text);
+      background: #fff;
+    }
+
+    .field textarea {
+      min-height: 112px;
+      resize: vertical;
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .radio-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .radio-option {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border: 1px solid #d5dff2;
+      border-radius: 12px;
+      background: #fff;
+      color: #2b3650;
+    }
+
+    .radio-option input {
+      width: auto;
+      margin: 0;
+    }
+
+    .field.is-hidden {
+      display: none;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .actions-group {
+      display: grid;
+      gap: 12px;
+    }
+
+    .action-note {
+      margin: -2px 0 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 0.92rem;
+      padding: 11px 14px;
+      transition: transform 0.15s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-soft {
+      background: #edf3ff;
+      color: #1d4aa8;
+    }
+
+    .btn-demo {
+      background: #edf3ff;
+      color: #1d4aa8;
+    }
+
+    .btn-quick {
+      background: #eef8f1;
+      color: #0f6b3e;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.72;
+      transform: none;
+    }
+
+    .result-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .result-head {
+      padding: 14px 16px;
+      font-weight: 800;
+      color: #18315d;
+      background: #f5f8ff;
+      border-bottom: 1px solid #d8e2f2;
+    }
+
+    .result-card.success .result-head {
+      background: #ecfbf2;
+      color: #0f6b3e;
+      border-bottom-color: #bfe8cc;
+    }
+
+    .result-card.error .result-head {
+      background: #fff1f1;
+      color: var(--danger);
+      border-bottom-color: #f0c4c4;
+    }
+
+    .result-card.loading .result-head {
+      background: #eef4ff;
+      color: #1652c9;
+      border-bottom-color: #cfe0ff;
+    }
+
+    .result-body {
+      padding: 16px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .result-row {
+      border: 1px solid #e1e7f2;
+      border-radius: 12px;
+      padding: 12px 14px;
+      background: #fcfdff;
+    }
+
+    .result-label {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .result-value {
+      color: #20314d;
+      word-break: break-word;
+      white-space: pre-wrap;
+    }
+
+    .mix-response {
+      display: grid;
+      gap: 18px;
+    }
+
+    .mix-response-note {
+      color: #20314d;
+      line-height: 1.9;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 1.06rem;
+    }
+
+    .mix-response-line {
+      line-height: 1.95;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 1.08rem;
+    }
+
+    .mix-response-line.is-preface {
+      color: #1652c9;
+    }
+
+    .mix-response-line.is-ai {
+      color: #b42318;
+      font-weight: 700;
+    }
+
+    .mix-response-line.is-conclusion {
+      color: #0f8b4a;
+    }
+
+    .mix-response-extra {
+      display: grid;
+      gap: 10px;
+      padding-top: 18px;
+      border-top: 1px dashed #d7dfef;
+    }
+
+    .mix-response-extra .extra-line {
+      color: #20314d;
+      line-height: 1.9;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 1.04rem;
+    }
+
+    .preview-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .preview-title-wrap {
+      display: grid;
+      gap: 4px;
+    }
+
+    .preview-title {
+      margin: 0;
+      font-size: 1.18rem;
+      color: #20314d;
+    }
+
+    .preview-subtitle {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .preview-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .share-note {
+      margin-top: 10px;
+      color: #667692;
+      font-size: 0.92rem;
+    }
+
+    .preview-surface {
+      min-height: 360px;
+      border: 1px solid #d9e2f3;
+      border-radius: 16px;
+      background: #fcfdff;
+      padding: 28px;
+      overflow: auto;
+    }
+
+    .preview-empty {
+      color: #667692;
+      line-height: 1.8;
+    }
+
+    .preview-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.48);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      z-index: 999;
+    }
+
+    .preview-modal.is-open {
+      display: flex;
+    }
+
+    .preview-modal-dialog {
+      width: min(1080px, 100%);
+      max-height: min(88vh, 960px);
+      background: #fff;
+      border-radius: 24px;
+      border: 1px solid #d9e2f3;
+      box-shadow: 0 28px 80px rgba(15, 23, 42, 0.22);
+      display: grid;
+      grid-template-rows: auto 1fr;
+      overflow: hidden;
+    }
+
+    .preview-modal-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 18px 22px;
+      border-bottom: 1px solid #e0e7f3;
+      background: #f8fbff;
+    }
+
+    .preview-modal-title {
+      margin: 0;
+      font-size: 1.12rem;
+      color: #20314d;
+    }
+
+    .preview-modal-body {
+      overflow: auto;
+      padding: 22px;
+      background: #fff;
+    }
+
+    .share-modal-card {
+      display: grid;
+      gap: 16px;
+    }
+
+    .share-modal-intro {
+      color: #2b3650;
+      line-height: 1.8;
+    }
+
+    .share-modal-block {
+      border: 1px solid #dce5f5;
+      border-radius: 16px;
+      background: #f9fbff;
+      padding: 16px 18px;
+    }
+
+    .share-modal-label {
+      font-size: 0.82rem;
+      color: #667692;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 8px;
+    }
+
+    .share-modal-value {
+      color: #20314d;
+      white-space: pre-wrap;
+      word-break: break-word;
+      line-height: 1.8;
+    }
+
+    .share-modal-field {
+      display: grid;
+      gap: 8px;
+    }
+
+    .share-modal-field label {
+      font-weight: 700;
+      color: #20314d;
+    }
+
+    .share-modal-field input {
+      width: 100%;
+      border: 1px solid #cfd9ec;
+      border-radius: 12px;
+      padding: 12px 14px;
+      font: inherit;
+      color: var(--text);
+      background: #fff;
+    }
+
+    .share-modal-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .result-summary {
+      display: grid;
+      gap: 12px;
+    }
+
+    .summary-note {
+      color: #2a3d60;
+      line-height: 1.75;
+    }
+
+    .summary-group {
+      display: grid;
+      gap: 8px;
+    }
+
+    .summary-title {
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .summary-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .summary-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      background: #eef3ff;
+      color: #264372;
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+
+    .summary-chip strong {
+      font-weight: 800;
+    }
+
+    .summary-chip.is-success {
+      background: #ecfbf2;
+      color: #0f6b3e;
+    }
+
+    .summary-chip.is-warning {
+      background: #fff6df;
+      color: #8a5a00;
+    }
+
+    .summary-chip.is-danger {
+      background: #fff1f1;
+      color: #b42318;
+    }
+
+    .result-details {
+      border: 1px solid #dbe4f4;
+      border-radius: 12px;
+      background: #f8fbff;
+      overflow: hidden;
+    }
+
+    .result-details summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 12px 14px;
+      font-weight: 700;
+      color: #28416c;
+      user-select: none;
+    }
+
+    .result-details summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .result-details summary::after {
+      content: "展開";
+      float: right;
+      color: var(--muted);
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .result-details[open] summary::after {
+      content: "收合";
+    }
+
+    .result-json {
+      margin: 0;
+      padding: 0 14px 14px;
+      color: #20314d;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font: 0.88rem/1.7 "SFMono-Regular", "Menlo", "Consolas", monospace;
+    }
+
+    .footer {
+      margin-top: 24px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.95rem;
+      padding: 14px 18px 4px;
+    }
+
+    .copyright {
+      margin-top: 10px;
+      color: #71809c;
+      font-size: 0.92rem;
+    }
+
+    @media (max-width: 960px) {
+      .playground-grid,
+      .field-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .page {
+        width: min(calc(100% - 20px), var(--max-width));
+        padding-top: 18px;
+      }
+
+      .hero,
+      .section,
+      .panel {
+        padding: 22px 18px;
+        border-radius: 20px;
+      }
+
+      h1 {
+        font-size: 1.86rem;
+      }
+
+      .actions,
+      .radio-group {
+        flex-direction: column;
+      }
+
+      .preview-surface {
+        min-height: 480px;
+        padding: 14px;
+      }
+
+      .preview-modal {
+        padding: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <div class="eyebrow">Force Teaching Edition / 執行頁</div>
+      <h1>Multi-Model API Key Test Console v1.02</h1>
+      <p>這一頁專門負責實際測試。你可以在這裡輸入 GAS Web App URL、登入資訊、模型選項、system prompt 覆蓋值與輸出字數限制，然後直接觀察後端回傳的 debug 資訊。</p>
+      <div class="hero-note"><strong>備註：</strong>Force Cheng × FALO｜版本 v1.02｜最後更新時間 2026/4/7</div>
+
+      <nav class="tab-nav" aria-label="頁面切換">
+        <a class="tab-link" href="./index.html">說明頁</a>
+        <a class="tab-link is-active" href="./playground.html">執行頁</a>
+        <a class="tab-link" href="https://drive.google.com/file/d/1h9Gs0iRiEmC5PcZprfXcejp6d7RRSOd1/view?usp=sharing" target="_blank" rel="noopener noreferrer">案例檔下載</a>
+      </nav>
+    </header>
+
+    <section class="section">
+      <h2>API Playground（執行頁）</h2>
+      <p>這裡是用來測試 API Key 是否可用，以及 Gemini / Kimi / MiniMax 是否能正常串接。同時也可以測試登入驗證、後端即時設定覆蓋與 debug 回傳。</p>
+      <div class="teaching-box">
+        <p><strong>這章在學什麼：</strong>把前端輸入、後端 Sheet 設定與 GAS 回傳連成完整流程。</p>
+        <p><strong>實務上拿來做什麼：</strong>給學員、客戶或團隊成員自己測 key、測登入、測輸出限制。</p>
+        <p><strong>哪裡容易踩雷：</strong>忘了填 GAS URL、欄位名稱不一致，或不清楚目前限制值來自前端還是後端。</p>
+      </div>
+
+      <div class="playground-grid">
+        <div class="panel">
+          <div class="field-grid">
+            <div class="field">
+              <div class="field-head">
+                <label for="api-endpoint">GAS Web App URL</label>
+                <button class="btn btn-quick" type="button" id="share-example-link">取得範例網址</button>
+              </div>
+              <input id="api-endpoint" type="url" value="" placeholder="https://script.google.com/macros/s/your-web-app-id/exec">
+              <small>這裡預設留空。GitHub 公開版不內建真實 <code>exec</code>，避免直接暴露後端入口；若要測試，請手動貼上你的 Web App URL，或向管理者索取受控測試網址。</small>
+            </div>
+
+            <div class="field-row">
+              <div class="field">
+                <label for="username">帳號</label>
+                <input id="username" type="text" placeholder="admin">
+                <small>教學版預設帳號可用 <code>admin</code> 與 <code>user</code>。</small>
+              </div>
+              <div class="field">
+                <label for="password">密碼</label>
+                <input id="password" type="password" placeholder="管理者密碼需驗證後回填">
+                <small>若要帶入管理者目前密碼，請按下方「填入管理者示範值」並輸入驗證碼；後端會讀取 <code>users</code> sheet 中 <code>admin</code> 的目前密碼。</small>
+              </div>
+            </div>
+
+            <div class="field-row">
+              <div class="field">
+                <label for="playground-model">模型選擇</label>
+                <select id="playground-model">
+                  <option value="gemini">Gemini</option>
+                  <option value="kimi">Kimi</option>
+                  <option value="minimax">MiniMax</option>
+                </select>
+              </div>
+              <fieldset class="field">
+                <legend>金鑰來源</legend>
+                <div class="radio-group">
+                  <label class="radio-option">
+                    <input type="radio" name="key-source" value="server" checked>
+                    <span>Use Server Key</span>
+                  </label>
+                  <label class="radio-option">
+                    <input type="radio" name="key-source" value="user">
+                    <span>Use My API Key</span>
+                  </label>
+                </div>
+              </fieldset>
+            </div>
+
+            <div class="field is-hidden" id="user-key-field">
+              <label for="user-api-key">使用者 API Key</label>
+              <input id="user-api-key" type="password" placeholder="請輸入你自己的 API Key">
+            </div>
+
+            <div class="field">
+              <label for="system-prompt">System Prompt 覆蓋值</label>
+              <textarea id="system-prompt" placeholder="留空時，改由後端 runtime_config 讀取。">跟使用者介紹我是 Falo AI Agent，並且預設用最精簡的方式回覆。</textarea>
+              <small>如果留空，後端會讀取 Google Sheet 的 <code>runtime_config.system_prompt</code>。</small>
+            </div>
+
+            <div class="field">
+              <label for="output-char-limit">輸出字數限制</label>
+              <input id="output-char-limit" type="number" min="0" step="1" placeholder="500">
+              <div class="actions" style="margin-top:10px;">
+                <button class="btn btn-soft" type="button" id="set-no-limit">沒限制</button>
+              </div>
+              <small>如果留空，後端會使用 <code>runtime_config.output_char_limit</code>；若輸入 <code>0</code>，代表不限制字數。</small>
+            </div>
+
+            <div class="field">
+              <label for="playground-message">測試訊息輸入框</label>
+              <textarea id="playground-message">1加到100等於多少？有沒有比較快的演算法？</textarea>
+            </div>
+
+            <div class="actions-group">
+              <div class="actions">
+                <button class="btn btn-demo" type="button" id="fill-admin-values">填入管理者示範值</button>
+                <button class="btn btn-demo" type="button" id="fill-user-values">填入一般使用者示範值</button>
+                <button class="btn btn-quick" type="button" data-prompt="Reply only: API connection successful.">Test Connection</button>
+                <button class="btn btn-quick" type="button" data-prompt="請用一句話介紹你自己。">Simple Prompt</button>
+                <button class="btn btn-quick" type="button" data-prompt="Return a JSON object with fields: status, model, message.">JSON Test</button>
+                <button class="btn btn-primary" type="button" id="playground-send">Send</button>
+              </div>
+              <p class="action-note">管理者示範值會先帶入 <code>admin</code>、模型、提示詞與示範問題，再要求你輸入第二組驗證碼；驗證成功後，後端會讀取 <code>users</code> sheet 中 <code>admin</code> 的目前密碼並回填。一般使用者示範值則會帶入 <code>user / 123</code>。注意：只有在 <code>Use Server Key</code> 模式下，<code>user</code> 才會進入受限教學回覆；若切到 <code>Use My API Key</code>，則不受角色限制。</p>
+              <p class="share-note">安全備註：這份公開版已移除內建真實 <code>exec</code>。一般情況下，真正較高風險的是可直接呼叫後端的 GAS Web App URL；因此若要對外分享，建議改用受控發放、手動貼上，或另建專用測試端點。</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="result-card" id="result-card">
+            <div class="result-head">等待測試</div>
+            <div class="result-body">
+              <div class="result-row">
+                <div class="result-label">System Summary</div>
+                <div class="result-summary" id="result-summary">
+                  <div class="summary-note">送出後，這裡會用人看得懂的方式整理本次是怎麼送資料、哪些欄位有進系統，以及哪些設定由前端或後端接手。</div>
+                </div>
+              </div>
+              <details class="result-details">
+                <summary>查看詳細 JSON</summary>
+                <pre class="result-json" id="result-debug">-</pre>
+              </details>
+              <div class="result-row">
+                <div class="preview-head">
+                  <div class="preview-title-wrap">
+                    <div class="result-label">Mix AI Response</div>
+                    <h3 class="preview-title">Final Mixed Output</h3>
+                    <div class="preview-subtitle">這裡顯示前言、AI 回覆、後語的最終組裝結果，並保留顏色區分。</div>
+                  </div>
+                  <div class="preview-actions">
+                    <button class="btn btn-soft" type="button" id="preview-expand">放大閱讀</button>
+                  </div>
+                </div>
+                <div class="preview-surface" id="result-preview">送出後會在這裡顯示回應摘要。</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div>Last Updated: 2026/4/7</div>
+      <div class="copyright">Force Cheng × FALO｜版本 v1.02｜最後更新時間 2026/4/7</div>
+    </footer>
+  </div>
+
+  <div class="preview-modal" id="preview-modal" aria-hidden="true">
+    <div class="preview-modal-dialog">
+      <div class="preview-modal-head">
+        <h3 class="preview-modal-title">Mix AI Response｜放大閱讀</h3>
+        <button class="btn btn-primary" type="button" id="preview-close">關閉</button>
+      </div>
+      <div class="preview-modal-body" id="preview-modal-body">送出後會在這裡顯示回應摘要。</div>
+    </div>
+  </div>
+
+  <div class="preview-modal" id="share-modal" aria-hidden="true">
+    <div class="preview-modal-dialog">
+      <div class="preview-modal-head">
+        <h3 class="preview-modal-title">取得範例網址</h3>
+        <button class="btn btn-primary" type="button" id="share-close">關閉</button>
+      </div>
+      <div class="preview-modal-body">
+        <div class="share-modal-card">
+          <div class="share-modal-intro">請輸入第一組驗證碼。只有後端驗證成功後，系統才會回傳分享用的 exec 網址，並自動回填到上方 URL 欄位，同時複製到剪貼簿。</div>
+          <div class="share-modal-field">
+            <label for="share-access-code">驗證碼</label>
+            <input id="share-access-code" type="password" placeholder="請輸入驗證碼">
+          </div>
+          <div class="share-modal-actions">
+            <button class="btn btn-quick" type="button" id="share-submit">取得網址並複製</button>
+          </div>
+          <div class="share-modal-block">
+            <div class="share-modal-label">範例網址</div>
+            <div class="share-modal-value" id="share-modal-url">尚未取得</div>
+          </div>
+          <div class="share-modal-block">
+            <div class="share-modal-label">狀態訊息</div>
+            <div class="share-modal-value" id="share-modal-status">請先輸入驗證碼。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="preview-modal" id="admin-password-modal" aria-hidden="true">
+    <div class="preview-modal-dialog">
+      <div class="preview-modal-head">
+        <h3 class="preview-modal-title">載入管理者密碼</h3>
+        <button class="btn btn-primary" type="button" id="admin-password-close">關閉</button>
+      </div>
+      <div class="preview-modal-body">
+        <div class="share-modal-card">
+          <div class="share-modal-intro">請輸入第二組驗證碼。只有後端驗證成功後，系統才會讀取 <code>users</code> sheet 中 <code>admin</code> 帳號的目前密碼，並回填到左側密碼欄位。</div>
+          <div class="share-modal-field">
+            <label for="admin-password-access-code">驗證碼</label>
+            <input id="admin-password-access-code" type="password" placeholder="請輸入驗證碼">
+          </div>
+          <div class="share-modal-actions">
+            <button class="btn btn-demo" type="button" id="admin-password-submit">驗證後回填密碼</button>
+          </div>
+          <div class="share-modal-block">
+            <div class="share-modal-label">管理者帳號</div>
+            <div class="share-modal-value" id="admin-password-username">admin</div>
+          </div>
+          <div class="share-modal-block">
+            <div class="share-modal-label">狀態訊息</div>
+            <div class="share-modal-value" id="admin-password-status">請先輸入驗證碼。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const keySourceInputs = document.querySelectorAll('input[name="key-source"]');
+    const userKeyField = document.getElementById("user-key-field");
+    const quickButtons = document.querySelectorAll("[data-prompt]");
+    const playgroundSend = document.getElementById("playground-send");
+    const fillAdminValuesButton = document.getElementById("fill-admin-values");
+    const fillUserValuesButton = document.getElementById("fill-user-values");
+
+    const apiEndpointInput = document.getElementById("api-endpoint");
+    const usernameInput = document.getElementById("username");
+    const passwordInput = document.getElementById("password");
+    const playgroundModel = document.getElementById("playground-model");
+    const userApiKeyInput = document.getElementById("user-api-key");
+    const systemPromptInput = document.getElementById("system-prompt");
+    const outputCharLimitInput = document.getElementById("output-char-limit");
+    const setNoLimitButton = document.getElementById("set-no-limit");
+    const playgroundMessage = document.getElementById("playground-message");
+
+    const resultCard = document.getElementById("result-card");
+    const resultHead = resultCard.querySelector(".result-head");
+    const resultPreview = document.getElementById("result-preview");
+    const resultSummary = document.getElementById("result-summary");
+    const resultDebug = document.getElementById("result-debug");
+    const resultDetails = document.querySelector(".result-details");
+    const previewExpandButton = document.getElementById("preview-expand");
+    const previewModal = document.getElementById("preview-modal");
+    const previewModalBody = document.getElementById("preview-modal-body");
+    const previewCloseButton = document.getElementById("preview-close");
+    const shareExampleButton = document.getElementById("share-example-link");
+    const shareModal = document.getElementById("share-modal");
+    const shareAccessCodeInput = document.getElementById("share-access-code");
+    const shareSubmitButton = document.getElementById("share-submit");
+    const shareModalUrl = document.getElementById("share-modal-url");
+    const shareModalStatus = document.getElementById("share-modal-status");
+    const shareCloseButton = document.getElementById("share-close");
+    const adminPasswordModal = document.getElementById("admin-password-modal");
+    const adminPasswordAccessCodeInput = document.getElementById("admin-password-access-code");
+    const adminPasswordSubmitButton = document.getElementById("admin-password-submit");
+    const adminPasswordStatus = document.getElementById("admin-password-status");
+    const adminPasswordUsername = document.getElementById("admin-password-username");
+    const adminPasswordCloseButton = document.getElementById("admin-password-close");
+    const actionButtons = [];
+    const modelToEnvVar = {
+      gemini: "GEMINI_API_KEY",
+      kimi: "KIMI_API_KEY",
+      minimax: "MINIMAX_API_KEY"
+    };
+    const defaultTeachingEndpoint = "";
+
+    const escapeHtml = (value) => String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/\"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+
+    const buildMixResponseHtml = (preview, sections) => {
+      const previewText = String(preview || "").trim();
+      const structured = sections && typeof sections === "object" ? sections : null;
+      if (!previewText) {
+        return '<div class="preview-empty">送出後會在這裡顯示混合回覆內容。</div>';
+      }
+
+      if (structured && (structured.systemReplyLine || structured.preface || structured.conclusion)) {
+        const preface = String(structured.preface || "").trim();
+        const systemReply = String(structured.systemReplyLine || "").trim();
+        const conclusion = String(structured.conclusion || "").trim();
+        const extraSections = [
+          String(structured.systemPromptLine || "").trim(),
+          String(structured.userInputLine || "").trim(),
+          String(structured.outputLimitLine || "").trim(),
+          String(structured.responseTimeLine || "").trim()
+        ].filter(Boolean);
+
+        const coloredLines = [];
+        if (preface) {
+          coloredLines.push(`<div class="mix-response-line is-preface">${escapeHtml(preface)}</div>`);
+        }
+
+        if (systemReply) {
+          const outputLimitHint = String(structured.outputLimitLine || "").replace("【輸出限制】", "").trim();
+          const aiReplyBody = systemReply.replace(/^【系統回覆】/, "").trim();
+          const aiReplyTitle = outputLimitHint ? `【AI 回覆｜${outputLimitHint}】` : "【AI 回覆】";
+          coloredLines.push(`<div class="mix-response-line is-ai">${escapeHtml(aiReplyTitle + "\n" + aiReplyBody)}</div>`);
+        }
+
+        if (conclusion) {
+          coloredLines.push(`<div class="mix-response-line is-conclusion">${escapeHtml(conclusion)}</div>`);
+        }
+
+        const extrasHtml = extraSections.length
+          ? `<div class="mix-response-extra">${extraSections
+              .map((line) => `<div class="extra-line">${escapeHtml(line)}</div>`)
+              .join("")}</div>`
+          : "";
+
+        return `
+          <div class="mix-response">
+            ${coloredLines.join("")}
+            ${extrasHtml}
+          </div>
+        `;
+      }
+
+      if (!previewText.includes("【系統回覆】")) {
+        return `<div class="mix-response-note">${escapeHtml(previewText)}</div>`;
+      }
+      return `<div class="mix-response-note">${escapeHtml(previewText)}</div>`;
+    };
+
+    const setPreviewHtml = (preview, sections) => {
+      const html = buildMixResponseHtml(preview, sections);
+      resultPreview.innerHTML = html;
+      previewModalBody.innerHTML = html;
+    };
+
+    const keySourceLabel = (value) => value === "user" ? "Use My API Key" : "Use Server Key";
+
+    const chipClassByState = (state) => {
+      if (state === "success") return "summary-chip is-success";
+      if (state === "danger") return "summary-chip is-danger";
+      if (state === "warning") return "summary-chip is-warning";
+      return "summary-chip";
+    };
+
+    const createChip = (label, value, state) =>
+      `<span class="${chipClassByState(state)}"><strong>${escapeHtml(label)}</strong>${escapeHtml(value)}</span>`;
+
+    const sourceLabel = (sourceValue, fallbackValue) => {
+      const resolved = sourceValue || fallbackValue;
+      if (resolved === "payload") return "前端輸入";
+      if (resolved === "runtime_config") return "後端 runtime_config";
+      return fallbackValue || "待確認";
+    };
+
+    const buildSystemSummary = ({ payload, parsed, configParsed, phase, error }) => {
+      const responseData = parsed && parsed.data ? parsed.data : {};
+      const debugData = responseData && responseData.debug ? responseData.debug : {};
+      const selectedApiKeyState = configParsed && configParsed.data && configParsed.data.apiKeys
+        ? configParsed.data.apiKeys[payload.aiModel]
+        : undefined;
+      const auditCount = responseData.auditTotalExecutions
+        || (configParsed && configParsed.data && configParsed.data.auditTotalExecutions)
+        || "待確認";
+      const selectedEnvVar = modelToEnvVar[payload.aiModel] || "API_KEY";
+      const usesServerKey = payload.keySource === "server";
+      const systemPromptSource = sourceLabel(debugData.systemPromptSource, payload.systemPrompt ? "前端輸入" : "後端 runtime_config");
+      const outputLimitSource = sourceLabel(debugData.outputCharLimitSource, payload.outputCharLimit ? "前端輸入" : "後端 runtime_config");
+      const appliedOutputLimit = responseData.outputCharLimit || payload.outputCharLimit || (configParsed && configParsed.data && configParsed.data.runtimeConfig && configParsed.data.runtimeConfig.outputCharLimit) || "待確認";
+      const resolvedRole = responseData.role || (debugData.authResult && debugData.authResult.role) || (payload.username === "admin" ? "admin" : payload.username ? "user" : "guest");
+      const responseMode = responseData.responseMode || debugData.responseMode || (payload.keySource === "user" ? "full_reply_user_key" : resolvedRole === "admin" ? "admin_full_reply" : "limited_info_reply");
+      const responseModeLabel = responseMode === "admin_full_reply"
+        ? "完整教學版回覆"
+        : responseMode === "full_reply_user_key"
+          ? "完整回覆（使用者自帶 Key）"
+          : "受限教學回覆";
+      const authMessage = debugData.authResult
+        ? (debugData.authResult.ok ? "帳密驗證成功" : "帳密驗證失敗")
+        : (payload.username || payload.password ? "已送出帳密驗證資料" : "未送出帳密驗證資料");
+      const serverKeyStatus = responseData.serverApiKeyConfigured === true || selectedApiKeyState === true
+        ? "已設定"
+        : responseData.serverApiKeyConfigured === false || selectedApiKeyState === false
+          ? "未設定"
+          : "待確認";
+      const summaryNote = phase === "sending"
+        ? "系統正在把這次表單內容組成請求。你可以先檢查下面的標示，確認勾選與填寫的資料是否符合預期。"
+        : phase === "blocked"
+          ? "這次請求在前端或前置檢查階段就被擋下。下面保留本次原本要送出的組合，方便你快速確認是哪個欄位沒準備好。"
+          : parsed && parsed.success
+            ? "這次請求已成功送到後端，下面是系統實際辨識到的送出方式與參數來源。"
+            : "這次請求已有回應，但系統偵測到錯誤或缺漏。下面的整理可用來判斷是哪一段流程出了問題。";
+      const connectionStatusLabel = phase === "success"
+        ? "Success"
+        : phase === "sending"
+          ? "Preparing"
+          : phase === "blocked"
+            ? "Blocked"
+            : phase === "error"
+              ? "Request Error"
+              : "待確認";
+
+      const transportChips = [
+        createChip("傳送方法", "POST", "success"),
+        createChip("內容格式", "text/plain;charset=utf-8", "success"),
+        createChip("資料包裝", "JSON.stringify", "success"),
+        createChip("Action", payload.action || "chat", "success")
+      ].join("");
+
+      const inputChips = [
+        createChip("模型", payload.aiModel || "未選擇", "success"),
+        createChip("金鑰來源", keySourceLabel(payload.keySource), "success"),
+        createChip("帳號", payload.username ? "已填" : "未填", payload.username ? "success" : "warning"),
+        createChip("密碼", payload.password ? "已填" : "未填", payload.password ? "success" : "warning"),
+        createChip("測試訊息", payload.message ? `已填 ${payload.message.length} 字` : "未填", payload.message ? "success" : "danger")
+      ];
+
+      if (usesServerKey) {
+        inputChips.push(createChip(selectedEnvVar, serverKeyStatus, serverKeyStatus === "已設定" ? "success" : serverKeyStatus === "未設定" ? "danger" : "warning"));
+      } else {
+        inputChips.push(createChip("使用者 Key", payload.userApiKey ? "已填" : "未填", payload.userApiKey ? "success" : "danger"));
+      }
+
+      const overviewChips = [
+        createChip("連線狀態", connectionStatusLabel, phase === "success" ? "success" : phase === "sending" ? "warning" : "danger"),
+        createChip("模型", responseData.aiModel || payload.aiModel || "待確認", "success"),
+        createChip("金鑰來源", keySourceLabel(responseData.keySource || payload.keySource), "success")
+      ].join("");
+
+      const appliedChips = [
+        createChip("帳號角色", resolvedRole === "admin" ? "管理者" : resolvedRole === "user" ? "一般使用者" : "訪客", resolvedRole === "admin" ? "success" : "warning"),
+        createChip("回應模式", responseModeLabel, responseMode === "limited_info_reply" ? "warning" : "success"),
+        createChip("System Prompt", systemPromptSource, payload.systemPrompt ? "success" : "warning"),
+        createChip("輸出字數限制", `${appliedOutputLimit}`, "success"),
+        createChip("限制值來源", outputLimitSource, payload.outputCharLimit ? "success" : "warning"),
+        createChip("登入驗證", authMessage, debugData.authResult && !debugData.authResult.ok ? "danger" : "success"),
+        createChip("回應時間", responseData.responseTimeTaipei || "待確認", "success"),
+        createChip("Audit", `${auditCount}`, "success")
+      ].join("");
+
+      const extraLine = error
+        ? `<div class="summary-note"><strong>目前提醒：</strong>${escapeHtml(error)}</div>`
+        : "";
+
+      return `
+        <div class="summary-note">${escapeHtml(summaryNote)}</div>
+        <div class="summary-group">
+          <div class="summary-title">本次結果重點</div>
+          <div class="summary-chips">${overviewChips}</div>
+        </div>
+        <div class="summary-group">
+          <div class="summary-title">傳送方式</div>
+          <div class="summary-chips">${transportChips}</div>
+        </div>
+        <div class="summary-group">
+          <div class="summary-title">本次送入系統的組合</div>
+          <div class="summary-chips">${inputChips.join("")}</div>
+        </div>
+        <div class="summary-group">
+          <div class="summary-title">系統實際套用的設定</div>
+          <div class="summary-chips">${appliedChips}</div>
+        </div>
+        ${extraLine}
+      `;
+    };
+
+    const updateKeyFieldVisibility = () => {
+      const selected = document.querySelector('input[name="key-source"]:checked');
+      const showUserKey = selected && selected.value === "user";
+      userKeyField.classList.toggle("is-hidden", !showUserKey);
+    };
+
+    const setResultState = ({ status, model, keySource, preview, sections, error, debug, summary, state }) => {
+      resultCard.classList.remove("success", "error", "loading");
+      if (state) resultCard.classList.add(state);
+      resultHead.textContent = state === "success"
+        ? "測試成功"
+        : state === "error"
+          ? "測試失敗"
+          : state === "loading"
+            ? "執行中"
+            : "等待測試";
+      setPreviewHtml(preview, sections);
+      resultSummary.innerHTML = summary || '<div class="summary-note">目前尚無系統綜合說明。</div>';
+      resultDebug.textContent = debug || "-";
+      resultDetails.open = false;
+    };
+
+    actionButtons.push(
+      ...Array.from(document.querySelectorAll(".actions .btn")),
+      shareExampleButton
+    );
+
+    const setActionLoading = (isLoading) => {
+      actionButtons.forEach((button) => {
+        button.disabled = isLoading;
+      });
+      playgroundSend.textContent = isLoading ? "執行中..." : "Send";
+    };
+
+    keySourceInputs.forEach((input) => {
+      input.addEventListener("change", updateKeyFieldVisibility);
+    });
+    updateKeyFieldVisibility();
+
+    quickButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        playgroundMessage.value = button.getAttribute("data-prompt") || "";
+        playgroundMessage.focus();
+      });
+    });
+
+    setNoLimitButton.addEventListener("click", () => {
+      outputCharLimitInput.value = "0";
+      outputCharLimitInput.focus();
+    });
+
+    const setSelectedKeySource = (value) => {
+      const selected = Array.from(keySourceInputs).find((input) => input.value === value);
+      if (selected) {
+        selected.checked = true;
+      }
+      updateKeyFieldVisibility();
+    };
+
+    const applyAdminDemoDefaults = () => {
+      usernameInput.value = "admin";
+      passwordInput.value = "";
+      playgroundModel.value = "gemini";
+      setSelectedKeySource("server");
+      userApiKeyInput.value = "";
+      systemPromptInput.value = "跟使用者介紹我是 Falo AI Agent，並且預設用最精簡的方式回覆。";
+      outputCharLimitInput.value = "";
+      playgroundMessage.value = "1加到100等於多少？有沒有比較快的演算法？";
+      adminPasswordUsername.textContent = "admin";
+    };
+
+    fillAdminValuesButton.addEventListener("click", () => {
+      applyAdminDemoDefaults();
+      adminPasswordStatus.textContent = "請先輸入驗證碼。";
+      adminPasswordAccessCodeInput.value = "";
+      openAdminPasswordModal();
+    });
+
+    fillUserValuesButton.addEventListener("click", () => {
+      usernameInput.value = "user";
+      passwordInput.value = "123";
+      playgroundModel.value = "gemini";
+      setSelectedKeySource("server");
+      userApiKeyInput.value = "";
+      systemPromptInput.value = "跟使用者介紹我是 Falo AI Agent，並且預設用最精簡的方式回覆。";
+      outputCharLimitInput.value = "";
+      playgroundMessage.value = "請示範一般使用者的受限教學回覆。";
+      apiEndpointInput.focus();
+    });
+
+    const openShareModal = () => {
+      shareModal.classList.add("is-open");
+      shareModal.setAttribute("aria-hidden", "false");
+      shareAccessCodeInput.focus();
+    };
+
+    const closeShareModal = () => {
+      shareModal.classList.remove("is-open");
+      shareModal.setAttribute("aria-hidden", "true");
+    };
+
+    const openAdminPasswordModal = () => {
+      adminPasswordModal.classList.add("is-open");
+      adminPasswordModal.setAttribute("aria-hidden", "false");
+      adminPasswordAccessCodeInput.focus();
+    };
+
+    const closeAdminPasswordModal = () => {
+      adminPasswordModal.classList.remove("is-open");
+      adminPasswordModal.setAttribute("aria-hidden", "true");
+    };
+
+    previewExpandButton.addEventListener("click", () => {
+      previewModal.classList.add("is-open");
+      previewModal.setAttribute("aria-hidden", "false");
+    });
+
+    previewCloseButton.addEventListener("click", () => {
+      previewModal.classList.remove("is-open");
+      previewModal.setAttribute("aria-hidden", "true");
+    });
+
+    previewModal.addEventListener("click", (event) => {
+      if (event.target === previewModal) {
+        previewModal.classList.remove("is-open");
+        previewModal.setAttribute("aria-hidden", "true");
+      }
+    });
+
+    shareExampleButton.addEventListener("click", () => {
+      shareModalUrl.textContent = "尚未取得";
+      shareModalStatus.textContent = "請先輸入驗證碼。";
+      shareAccessCodeInput.value = "";
+      openShareModal();
+    });
+
+    shareCloseButton.addEventListener("click", closeShareModal);
+    adminPasswordCloseButton.addEventListener("click", closeAdminPasswordModal);
+
+    shareModal.addEventListener("click", (event) => {
+      if (event.target === shareModal) {
+        closeShareModal();
+      }
+    });
+
+    adminPasswordModal.addEventListener("click", (event) => {
+      if (event.target === adminPasswordModal) {
+        closeAdminPasswordModal();
+      }
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        previewModal.classList.remove("is-open");
+        previewModal.setAttribute("aria-hidden", "true");
+        closeShareModal();
+        closeAdminPasswordModal();
+      }
+    });
+
+    const fetchServerConfig = async (endpoint) => {
+      const response = await fetch(endpoint, { method: "GET" });
+      const rawText = await response.text();
+      let parsed = null;
+      try {
+        parsed = JSON.parse(rawText);
+      } catch (error) {
+        parsed = null;
+      }
+      return { response, rawText, parsed };
+    };
+
+    shareSubmitButton.addEventListener("click", async () => {
+      const endpoint = apiEndpointInput.value.trim() || defaultTeachingEndpoint;
+      const accessCode = shareAccessCodeInput.value.trim();
+
+      if (!endpoint) {
+        shareModalStatus.textContent = "公開版已移除內建 exec，請先手動貼上 GAS Web App URL，或向管理者索取。";
+        shareModalUrl.textContent = "尚未取得";
+        return;
+      }
+
+      if (!accessCode) {
+        shareModalStatus.textContent = "請先輸入驗證碼。";
+        return;
+      }
+
+      shareModalStatus.textContent = "驗證中，請稍候...";
+      shareModalUrl.textContent = "尚未取得";
+
+      try {
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8"
+          },
+          body: JSON.stringify({
+            action: "get_share_url",
+            accessCode
+          })
+        });
+
+        const rawText = await response.text();
+        let parsed = null;
+        try {
+          parsed = JSON.parse(rawText);
+        } catch (error) {
+          parsed = null;
+        }
+
+        const shareExecUrl = parsed && parsed.data ? String(parsed.data.shareExecUrl || "").trim() : "";
+        if (!response.ok || !parsed || !parsed.success || !shareExecUrl) {
+          shareModalStatus.textContent = parsed && parsed.message
+            ? parsed.message
+            : "驗證失敗，尚未取得範例網址。";
+          return;
+        }
+
+        apiEndpointInput.value = shareExecUrl;
+        shareModalUrl.textContent = shareExecUrl;
+        try {
+          await navigator.clipboard.writeText(shareExecUrl);
+          shareModalStatus.textContent = "驗證成功，範例網址已回填並複製到剪貼簿。";
+        } catch (error) {
+          shareModalStatus.textContent = "驗證成功，範例網址已回填；若瀏覽器未能自動複製，請手動複製上方網址。";
+        }
+      } catch (error) {
+        shareModalStatus.textContent = "無法連線到後端，請確認 Web App URL 與部署狀態。";
+      }
+    });
+
+    adminPasswordSubmitButton.addEventListener("click", async () => {
+      const endpoint = apiEndpointInput.value.trim() || defaultTeachingEndpoint;
+      const accessCode = adminPasswordAccessCodeInput.value.trim();
+
+      if (!endpoint) {
+        adminPasswordStatus.textContent = "公開版已移除內建 exec，請先手動貼上 GAS Web App URL，或向管理者索取。";
+        return;
+      }
+
+      if (!accessCode) {
+        adminPasswordStatus.textContent = "請先輸入驗證碼。";
+        return;
+      }
+
+      adminPasswordStatus.textContent = "驗證中，請稍候...";
+
+      try {
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8"
+          },
+          body: JSON.stringify({
+            action: "get_admin_password",
+            accessCode
+          })
+        });
+
+        const rawText = await response.text();
+        let parsed = null;
+        try {
+          parsed = JSON.parse(rawText);
+        } catch (error) {
+          parsed = null;
+        }
+
+        const adminPassword = parsed && parsed.data ? String(parsed.data.password || "").trim() : "";
+        const adminUsername = parsed && parsed.data ? String(parsed.data.username || "admin").trim() : "admin";
+        if (!response.ok || !parsed || !parsed.success || !adminPassword) {
+          adminPasswordStatus.textContent = parsed && parsed.message
+            ? parsed.message
+            : "驗證失敗，尚未取得管理者密碼。";
+          return;
+        }
+
+        usernameInput.value = adminUsername || "admin";
+        passwordInput.value = adminPassword;
+        adminPasswordUsername.textContent = adminUsername || "admin";
+        adminPasswordStatus.textContent = "驗證成功，已從 users sheet 讀取 admin 目前密碼並回填到左側欄位。";
+        passwordInput.focus();
+      } catch (error) {
+        adminPasswordStatus.textContent = "無法連線到後端，請確認 Web App URL 與部署狀態。";
+      }
+    });
+
+    playgroundSend.addEventListener("click", async () => {
+      const endpoint = apiEndpointInput.value.trim();
+      const selectedKeySource = document.querySelector('input[name="key-source"]:checked')?.value || "server";
+      const payload = {
+        action: "chat",
+        username: usernameInput.value.trim(),
+        password: passwordInput.value.trim(),
+        message: playgroundMessage.value.trim(),
+        systemPrompt: systemPromptInput.value.trim(),
+        outputCharLimit: outputCharLimitInput.value.trim(),
+        aiModel: playgroundModel.value,
+        keySource: selectedKeySource,
+        userApiKey: selectedKeySource === "user" ? userApiKeyInput.value.trim() : ""
+      };
+      let configParsed = null;
+
+      setActionLoading(true);
+      setResultState({
+        status: "Preparing Request...",
+        model: payload.aiModel,
+        keySource: payload.keySource,
+        preview: "前端正在整理欄位、檢查設定，準備送出請求。",
+        error: "",
+        summary: buildSystemSummary({ payload, phase: "sending" }),
+        debug: JSON.stringify(payload, null, 2),
+        state: "loading"
+      });
+
+      if (!endpoint) {
+        setResultState({
+          status: "Blocked",
+          model: payload.aiModel,
+          keySource: payload.keySource,
+          preview: "",
+          error: "請先輸入 GAS Web App URL。",
+          summary: buildSystemSummary({ payload, phase: "blocked", error: "請先輸入 GAS Web App URL。" }),
+          debug: "",
+          state: "error"
+        });
+        setActionLoading(false);
+        return;
+      }
+
+      if (!payload.message) {
+        setResultState({
+          status: "Blocked",
+          model: payload.aiModel,
+          keySource: payload.keySource,
+          preview: "",
+          error: "請先輸入測試訊息。",
+          summary: buildSystemSummary({ payload, phase: "blocked", error: "請先輸入測試訊息。" }),
+          debug: "",
+          state: "error"
+        });
+        setActionLoading(false);
+        return;
+      }
+
+      if (payload.keySource === "user" && !payload.userApiKey) {
+        setResultState({
+          status: "Blocked",
+          model: payload.aiModel,
+          keySource: payload.keySource,
+          preview: "",
+          error: "未填寫使用者 API Key",
+          summary: buildSystemSummary({ payload, phase: "blocked", error: "未填寫使用者 API Key" }),
+          debug: "",
+          state: "error"
+        });
+        setActionLoading(false);
+        return;
+      }
+
+      if (payload.keySource === "server" && payload.aiModel && !endpoint) {
+        setResultState({
+          status: "Blocked",
+          model: payload.aiModel,
+          keySource: payload.keySource,
+          preview: "",
+          error: "前端未填必要欄位：GAS Web App URL。",
+          summary: buildSystemSummary({ payload, phase: "blocked", error: "前端未填必要欄位：GAS Web App URL。" }),
+          debug: "",
+          state: "error"
+        });
+        setActionLoading(false);
+        return;
+      }
+
+      if (payload.keySource === "server") {
+        try {
+          const configResult = await fetchServerConfig(endpoint);
+          configParsed = configResult.parsed;
+          const apiKeys = configResult.parsed && configResult.parsed.data && configResult.parsed.data.apiKeys;
+          const selectedConfigured = apiKeys && apiKeys[payload.aiModel];
+
+          if (selectedConfigured === false) {
+            const missingEnvVar = modelToEnvVar[payload.aiModel] || "API_KEY";
+            setResultState({
+              status: "Blocked",
+              model: payload.aiModel,
+              keySource: payload.keySource,
+              preview: "",
+              error: `未填寫環境變數：${missingEnvVar}`,
+              summary: buildSystemSummary({ payload, configParsed, phase: "blocked", error: `未填寫環境變數：${missingEnvVar}` }),
+              debug: JSON.stringify(configResult.parsed, null, 2),
+              state: "error"
+            });
+            setActionLoading(false);
+            return;
+          }
+
+          if (!apiKeys || typeof selectedConfigured === "undefined") {
+            const missingEnvVar = modelToEnvVar[payload.aiModel] || "API_KEY";
+            setResultState({
+              status: "Blocked",
+              model: payload.aiModel,
+              keySource: payload.keySource,
+              preview: "",
+              error: `前端已阻擋：無法確認環境變數狀態，請檢查後端是否已正確提供 ${missingEnvVar} 狀態。`,
+              summary: buildSystemSummary({ payload, configParsed, phase: "blocked", error: `無法確認 ${missingEnvVar} 的狀態。` }),
+              debug: JSON.stringify(configResult.parsed, null, 2),
+              state: "error"
+            });
+            setActionLoading(false);
+            return;
+          }
+        } catch (error) {
+          setResultState({
+            status: "Blocked",
+            model: payload.aiModel,
+            keySource: payload.keySource,
+            preview: "",
+            error: "前端已阻擋：無法取得後端環境變數狀態，請先確認 Web App URL 與 GET 回應是否正常。",
+            summary: buildSystemSummary({ payload, phase: "blocked", error: "無法取得後端環境變數狀態。" }),
+            debug: error.message || "",
+            state: "error"
+          });
+          setActionLoading(false);
+          return;
+        }
+      }
+
+      setResultState({
+        status: "Sending...",
+        model: payload.aiModel,
+        keySource: payload.keySource,
+        preview: "請求已送出，正在等待後端回應。",
+        error: "",
+        summary: buildSystemSummary({ payload, configParsed, phase: "sending" }),
+        debug: JSON.stringify(payload, null, 2),
+        state: "loading"
+      });
+
+      try {
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const rawText = await response.text();
+        let parsed = null;
+        try {
+          parsed = JSON.parse(rawText);
+        } catch (error) {
+          parsed = null;
+        }
+
+        const previewText = parsed && parsed.data && parsed.data.reply
+          ? parsed.data.reply
+          : parsed && parsed.message
+            ? parsed.message
+            : rawText || "No response body";
+
+        const errorText = response.ok
+          ? ""
+          : (parsed && (parsed.error || parsed.message)) || rawText || `HTTP ${response.status}`;
+
+        const debugText = parsed && parsed.data && parsed.data.debug
+          ? JSON.stringify(parsed, null, 2)
+          : parsed
+            ? JSON.stringify(parsed, null, 2)
+            : rawText;
+
+        setResultState({
+          status: response.ok ? `Success (${response.status})` : `Failed (${response.status})`,
+          model: payload.aiModel,
+          keySource: payload.keySource,
+          preview: previewText,
+          sections: parsed && parsed.data ? parsed.data.replySections || null : null,
+          error: errorText,
+          summary: buildSystemSummary({ payload, parsed, configParsed, phase: response.ok ? "success" : "error", error: errorText }),
+          debug: debugText,
+          state: response.ok ? "success" : "error"
+        });
+        setActionLoading(false);
+      } catch (error) {
+        setResultState({
+          status: "Request Error",
+          model: payload.aiModel,
+          keySource: payload.keySource,
+          preview: "",
+          error: error.message || "Unknown error",
+          summary: buildSystemSummary({ payload, configParsed, phase: "error", error: error.message || "Unknown error" }),
+          debug: "",
+          state: "error"
+        });
+        setActionLoading(false);
+      }
+    });
+  </script>
+</body>
+</html>

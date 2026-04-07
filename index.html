@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multi-Model API Key Test Console v1.02：說明頁</title>
+  <meta name="description" content="教學版說明頁，整理 GAS、Google Sheet、Gemini、Kimi、MiniMax 的多模型測試架構與操作流程。">
+  <meta name="author" content="Force Cheng">
+  <meta name="copyright" content="© Force Cheng × FALO 2026">
+  <meta name="keywords" content="GAS, AI Agent, Multi Model, Gemini, Kimi, MiniMax, AI Integration, Google Apps Script, AI Router, AI Backend, AI Governance">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://force.formosa-ai.com/ai-codex/index.html">
+  <meta property="og:title" content="Multi-Model AI 助理專案：GAS 整合開發與踩坑指南">
+  <meta property="og:description" content="教學版說明頁，聚焦多模型 GAS 架構、Google Sheet 初始化與後端設定邏輯。">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://force.formosa-ai.com/ai-codex/index.html">
+  <meta property="og:site_name" content="FALO × Force Cheng">
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "TechArticle",
+      "headline": "Multi-Model AI Integration with GAS",
+      "author": {
+        "@type": "Person",
+        "name": "Force Cheng"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "FALO (Formosa AI Life Outlook)"
+      },
+      "datePublished": "2026-04-07",
+      "dateModified": "2026-04-07",
+      "description": "Teaching-oriented guide for a multi-model GAS architecture with Google Sheet initialization, runtime config, and API playground separation.",
+      "keywords": [
+        "AI Agent",
+        "Multi Model",
+        "GAS",
+        "AI Router",
+        "AI Integration"
+      ]
+    }
+  </script>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --surface: #ffffff;
+      --surface-soft: #eef4ff;
+      --border: #d8e0ef;
+      --text: #162033;
+      --muted: #5b6780;
+      --primary: #165dff;
+      --primary-soft: #eaf1ff;
+      --shadow: 0 20px 45px rgba(22, 32, 51, 0.08);
+      --radius-lg: 24px;
+      --radius-md: 16px;
+      --max-width: 1160px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(22, 93, 255, 0.08), transparent 30%),
+        linear-gradient(180deg, #f8fbff 0%, #f4f6fb 100%);
+      color: var(--text);
+      line-height: 1.8;
+    }
+
+    a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .page {
+      width: min(calc(100% - 32px), var(--max-width));
+      margin: 0 auto;
+      padding: 28px 0 72px;
+    }
+
+    .hero,
+    .section,
+    .sidebar {
+      background: rgba(255, 255, 255, 0.96);
+      border: 1px solid rgba(216, 224, 239, 0.95);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      padding: 36px;
+      margin-bottom: 24px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      padding: 8px 14px;
+      background: var(--primary-soft);
+      color: var(--primary);
+      border-radius: 999px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(2rem, 4vw, 3rem);
+      line-height: 1.18;
+      letter-spacing: -0.02em;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 1.04rem;
+    }
+
+    .meta-grid,
+    .card-grid {
+      display: grid;
+      gap: 14px;
+      margin-top: 22px;
+    }
+
+    .meta-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .card-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .meta-card,
+    .mini-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 16px 18px;
+    }
+
+    .meta-label {
+      color: var(--muted);
+      font-size: 0.84rem;
+      margin-bottom: 6px;
+    }
+
+    .meta-value {
+      font-weight: 700;
+      word-break: break-word;
+    }
+
+    .doc-meta {
+      margin-top: 18px;
+      padding: 16px 18px;
+      background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+    }
+
+    .doc-meta p {
+      margin: 0 0 6px;
+      color: #31415f;
+    }
+
+    .doc-meta p:last-child {
+      margin-bottom: 0;
+    }
+
+    .tab-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 22px;
+    }
+
+    .tab-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 124px;
+      padding: 11px 16px;
+      border-radius: 12px;
+      border: 1px solid #d5def1;
+      background: #fff;
+      color: #244278;
+      font-weight: 700;
+    }
+
+    .tab-link.is-active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    .action-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .action-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 148px;
+      padding: 12px 18px;
+      border-radius: 12px;
+      border: 1px solid #d5def1;
+      background: #fff;
+      color: #244278;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .action-link:hover {
+      text-decoration: none;
+      background: var(--primary-soft);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 20px;
+      padding: 20px;
+    }
+
+    .sidebar h2 {
+      margin: 0 0 12px;
+      font-size: 1rem;
+    }
+
+    .sidebar ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 8px;
+    }
+
+    .sidebar a {
+      display: block;
+      padding: 8px 10px;
+      border-radius: 10px;
+      color: var(--muted);
+    }
+
+    .sidebar a:hover {
+      background: var(--primary-soft);
+      text-decoration: none;
+      color: var(--primary);
+    }
+
+    .content {
+      display: grid;
+      gap: 18px;
+    }
+
+    .section {
+      padding: 30px;
+    }
+
+    .section h2 {
+      margin: 0 0 12px;
+      font-size: 1.48rem;
+      line-height: 1.35;
+    }
+
+    .section p,
+    .section li {
+      color: #2b3650;
+    }
+
+    .section ul,
+    .section ol {
+      margin: 10px 0 0;
+      padding-left: 1.25rem;
+    }
+
+    .teaching-box,
+    .callout {
+      border-radius: var(--radius-md);
+      padding: 16px 18px;
+      margin: 16px 0 18px;
+    }
+
+    .teaching-box {
+      background: linear-gradient(180deg, #fffdf7 0%, #fff8e8 100%);
+      border: 1px solid #f0dfb2;
+    }
+
+    .callout {
+      background: linear-gradient(180deg, #f8fbff 0%, #eef4ff 100%);
+      border: 1px solid #d7e4ff;
+    }
+
+    .teaching-box p,
+    .callout p {
+      margin: 0 0 6px;
+    }
+
+    .teaching-box p:last-child,
+    .callout p:last-child {
+      margin-bottom: 0;
+    }
+
+    .step-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .step-item {
+      display: grid;
+      grid-template-columns: 44px minmax(0, 1fr);
+      gap: 14px;
+      align-items: start;
+      padding: 14px 16px;
+      border: 1px solid #dce5f5;
+      border-radius: 16px;
+      background: linear-gradient(180deg, #ffffff 0%, #f9fbff 100%);
+    }
+
+    .step-no {
+      width: 44px;
+      height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      background: var(--primary-soft);
+      color: var(--primary);
+      font-weight: 800;
+    }
+
+    .step-item strong {
+      display: block;
+      margin-bottom: 4px;
+      color: #20314d;
+    }
+
+    .copy-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .copy-card {
+      border: 1px solid #dce5f5;
+      border-radius: 16px;
+      background: #fff;
+      overflow: hidden;
+    }
+
+    .copy-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid #e1e7f2;
+      background: #f8fbff;
+    }
+
+    .copy-title {
+      font-weight: 800;
+      color: #223556;
+    }
+
+    .copy-btn {
+      border: 0;
+      border-radius: 10px;
+      padding: 9px 12px;
+      background: #edf3ff;
+      color: #1d4aa8;
+      font-weight: 700;
+      cursor: pointer;
+      font: inherit;
+    }
+
+    .copy-btn:hover {
+      background: #dfeaff;
+    }
+
+    .copy-content {
+      margin: 0;
+      padding: 16px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font: 0.92rem/1.75 "SFMono-Regular", "Consolas", "Liberation Mono", monospace;
+      color: #223556;
+      background: #fff;
+    }
+
+    .guide-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .guide-card {
+      border: 1px solid #dce5f5;
+      border-radius: 16px;
+      padding: 16px 18px;
+      background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    }
+
+    .guide-card h3 {
+      margin: 0 0 8px;
+      font-size: 1rem;
+    }
+
+    .guide-card p {
+      margin: 0 0 8px;
+    }
+
+    .guide-card p:last-child {
+      margin-bottom: 0;
+    }
+
+    code {
+      background: #eef2f8;
+      color: #1d3557;
+      padding: 0.15rem 0.38rem;
+      border-radius: 8px;
+      font-family: "SFMono-Regular", "Consolas", "Liberation Mono", monospace;
+      font-size: 0.92rem;
+    }
+
+    .footer {
+      margin-top: 24px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.95rem;
+      padding: 14px 18px 4px;
+    }
+
+    .copyright {
+      margin-top: 10px;
+      color: #71809c;
+      font-size: 0.92rem;
+    }
+
+    @media (max-width: 960px) {
+      .layout,
+      .meta-grid,
+      .card-grid,
+      .copy-grid,
+      .guide-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: static;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .page {
+        width: min(calc(100% - 20px), var(--max-width));
+        padding-top: 18px;
+      }
+
+      .hero,
+      .section,
+      .sidebar {
+        padding: 22px 18px;
+        border-radius: 20px;
+      }
+
+      h1 {
+        font-size: 1.86rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <div class="eyebrow">Force Teaching Edition / 說明頁</div>
+      <h1>Multi-Model API Key Test Console v1.02</h1>
+      <p>這一頁專門負責教學說明，把架構、資料表、GAS 初始化與多模型規則講清楚。真正的測試操作已經拆到另一份執行頁，這樣學員看教材時不會被操作介面打斷。</p>
+
+      <div class="meta-grid">
+        <div class="meta-card">
+          <div class="meta-label">頁面定位</div>
+          <div class="meta-value">說明頁 / 教學講義 / 架構導覽</div>
+        </div>
+        <div class="meta-card">
+          <div class="meta-label">版本</div>
+          <div class="meta-value">v1.02 Teaching Edition</div>
+        </div>
+        <div class="meta-card">
+          <div class="meta-label">更新時間</div>
+          <div class="meta-value">2026-04-07 15:20</div>
+        </div>
+      </div>
+
+      <div class="doc-meta">
+        <p><strong>Author:</strong> Force Cheng</p>
+        <p><strong>Framework:</strong> FALO (Formosa AI Life Outlook)</p>
+        <p><strong>License:</strong> Internal Knowledge Asset / Educational Use</p>
+        <p><strong>備註：</strong>Force Cheng × FALO｜版本 v1.02｜最後更新時間 2026/4/7</p>
+      </div>
+
+      <nav class="tab-nav" aria-label="頁面切換">
+        <a class="tab-link is-active" href="./index.html">說明頁</a>
+        <a class="tab-link" href="./playground.html">執行頁</a>
+        <a class="tab-link" href="https://drive.google.com/file/d/1h9Gs0iRiEmC5PcZprfXcejp6d7RRSOd1/view?usp=sharing" target="_blank" rel="noopener noreferrer">案例檔下載</a>
+      </nav>
+    </header>
+
+    <div class="layout">
+      <aside class="sidebar">
+        <h2>目錄</h2>
+        <ul>
+          <li><a href="#positioning">一、頁面定位</a></li>
+          <li><a href="#versioning">二、v1.02 版本重點</a></li>
+          <li><a href="#quickstart">三、快速部署</a></li>
+          <li><a href="#architecture">四、整體架構</a></li>
+          <li><a href="#models">五、支援模型</a></li>
+          <li><a href="#pitfalls">六、三大踩坑與解法</a></li>
+          <li><a href="#sheets">七、Google Sheet 結構</a></li>
+          <li><a href="#runtime">八、後端即時設定</a></li>
+          <li><a href="#security">九、環境變數與安全邊界</a></li>
+          <li><a href="#flow">十、執行流程</a></li>
+          <li><a href="#teaching">十一、教學建議</a></li>
+          <li><a href="#summary">十二、結尾總結</a></li>
+        </ul>
+      </aside>
+
+      <main class="content">
+        <section class="section" id="positioning">
+          <h2>一、頁面定位</h2>
+          <p>本節先講清楚這個專案到底是做什麼的，以及為什麼我們刻意把內容拆成「說明頁」和「執行頁」。如果你是第一次接觸 Google Apps Script、Google Sheet 與 AI API，先把這一頁看懂，後面操作時會輕鬆很多。</p>
+          <div class="teaching-box">
+            <p><strong>這章在學什麼：</strong>理解專案定位、教材頁與操作頁的分工。</p>
+            <p><strong>實務上拿來做什麼：</strong>讓你可以把這個專案同時當成教材、展示頁與測試台。</p>
+            <p><strong>哪裡容易踩雷：</strong>初學者最常把說明、設定、輸入表單與除錯資訊塞在同一頁，最後畫面很滿，但教學效果反而不好。</p>
+          </div>
+          <div class="card-grid">
+            <div class="mini-card">
+              <strong>說明頁</strong>
+              <p>負責架構、規則、角色分流、資料表結構、初始化流程與安全說明。這一頁偏向教材、導讀與部署文件。</p>
+            </div>
+            <div class="mini-card">
+              <strong>執行頁</strong>
+              <p>負責登入、模型切換、送出測試、覆蓋參數、讀取範例網址、驗證管理者密碼，以及觀察結果與 debug 回應。</p>
+            </div>
+          </div>
+          <div class="callout">
+            <p><strong>一句話理解這個專案：</strong>它不是正式產品聊天台，而是一個專門拿來教「前端表單怎麼送到 GAS、GAS 怎麼接 Sheet、Sheet 怎麼控制回覆、回覆怎麼再送回前端」的教學型最小系統。</p>
+          </div>
+        </section>
+
+        <section class="section" id="versioning">
+          <h2>二、v1.02 版本重點</h2>
+          <p>本節把目前版本最重要的設計決策一次整理給你。若你要帶學員看「專案是怎麼一步步長大的」，可以先從這一段開始講。</p>
+          <div class="teaching-box">
+            <p><strong>這章在學什麼：</strong>理解這一版和早期單純測試版相比，多了哪些真正可教學的模組。</p>
+            <p><strong>實務上拿來做什麼：</strong>讓你在課堂上快速說明為什麼這不是只有 API 測試，而是有角色、限制、設定來源與安全邊界的系統。</p>
+            <p><strong>哪裡容易踩雷：</strong>只看到前端畫面，卻忽略了後端角色分流、A/B 驗證、Sheet 設定和 audit 計數器其實才是這版的核心。</p>
+          </div>
+          <ul>
+            <li><code>Use Server Key</code> 才會套用角色分流；<code>admin</code> 可拿完整教學版回覆，<code>user</code> 在 Server Key 模式下只進入受限教學回覆。</li>
+            <li><code>Use My API Key</code> 不受角色限制，改由使用者自己的 key 直接走完整回覆。</li>
+            <li>前端新增 A / B 驗證機制：一組驗證碼用來取得範例網址，另一組驗證碼用來讀取目前 <code>admin</code> 密碼。</li>
+            <li>後端支援 <code>runtime_config</code> 與 <code>forced_output</code>，也就是可以從 Google Sheet 直接控制前言、結語、system prompt 與字數限制。</li>
+            <li>系統新增 <code>AUDIT_TOTAL_EXECUTIONS</code> 稽核計數器，每次執行 <code>doGet</code> / <code>doPost</code> 都會累加。</li>
+            <li>字數限制預設改為 <code>500</code>，若前端填 <code>0</code>，代表不限制字數。</li>
+          </ul>
+        </section>
+
+        <section class="section" id="quickstart">
+          <h2>三、快速部署</h2>
+          <p>本節是給完全沒碰過 Google Apps Script 的新手。你不需要先懂全部技術名詞，只要先照著步驟把環境搭起來，就能在最短時間內看到「前端送出訊息、後端回應結果」這個完整迴路。</p>
+          <div class="teaching-box">
+            <p><strong>這章在學什麼：</strong>從 Excel、Google Sheet、Apps Script 到 Web App 的最小部署流程。</p>
+            <p><strong>實務上拿來做什麼：</strong>讓學員或客戶在 10 到 20 分鐘內完成第一個可操作版本。</p>
+            <p><strong>哪裡容易踩雷：</strong>不知道 GAS 在哪裡開、沒有先跑初始化、Script Properties 名稱打錯、部署後拿錯網址。</p>
+          </div>
+
+          <div class="step-list">
+            <div class="step-item">
+              <div class="step-no">1</div>
+              <div>
+                <strong>上傳 Excel 並轉成 Google Sheet</strong>
+                <div>把 <code>Api-Key-Teach-Template.xlsx</code> 上傳到 Google Drive，開啟後轉成 Google 試算表。這份表不是單純資料表，而是整個教學版後端的資料中心，後續帳號、前言、結語、runtime 設定與 logs 都在這裡。</div>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-no">2</div>
+              <div>
+                <strong>從 Google Sheet 開啟 Apps Script</strong>
+                <div>進入「擴充功能 &gt; Apps Script」，把 <code>SheetSetup.gs</code> 與 <code>Code.gs</code> 的內容貼進去。這一步的意思是：讓後端程式和這份 Google Sheet 綁在一起，後端之後就能直接讀這份表裡的帳號、設定與文字。</div>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-no">3</div>
+              <div>
+                <strong>先執行初始化</strong>
+                <div>執行一次 <code>setupTeachingSheets()</code>。它會檢查 <code>README / users / logs / forced_output / runtime_config</code> 是否完整；若結構壞掉，會重建成可教學的預設狀態。這一步可以把它理解成「把後端資料中心整理成程式看得懂的格式」。</div>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-no">4</div>
+              <div>
+                <strong>設定 Script Properties API Key</strong>
+                <div>到「專案設定 &gt; 指令碼屬性」，填入你要用的模型金鑰。沒有填的模型，在前端與後端都會被明確擋下。對新手來說，可以先只填 <code>GEMINI_API_KEY</code>，確定整體可跑再補其他模型。</div>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-no">5</div>
+              <div>
+                <strong>部署成 Web App</strong>
+                <div>新增部署作業，類型選「網頁應用程式」，執行身分選自己，存取權限依你的教學情境決定。部署後會得到一個 <code>/exec</code> 網址，這就是前端真正會打到的後端入口。</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="copy-grid">
+            <div class="copy-card">
+              <div class="copy-head">
+                <div class="copy-title">Script Properties 名稱</div>
+                <button class="copy-btn" type="button" data-copy-target="copy-props">複製</button>
+              </div>
+              <pre class="copy-content" id="copy-props">GEMINI_API_KEY
+KIMI_API_KEY
+MINIMAX_API_KEY
+SHARE_EXEC_CODE
+SHARE_EXEC_URL
+ADMIN_PASSWORD_CODE</pre>
+            </div>
+            <div class="copy-card">
+              <div class="copy-head">
+                <div class="copy-title">初始化要看到的 Sheet</div>
+                <button class="copy-btn" type="button" data-copy-target="copy-sheets">複製</button>
+              </div>
+              <pre class="copy-content" id="copy-sheets">README
+users
+logs
+forced_output
+runtime_config</pre>
+            </div>
+            <div class="copy-card">
+              <div class="copy-head">
+                <div class="copy-title">部署設定速查</div>
+                <button class="copy-btn" type="button" data-copy-target="copy-deploy">複製</button>
+              </div>
+              <pre class="copy-content" id="copy-deploy">類型：網頁應用程式
+執行身分：自己
+存取權限：任何人
+送法：POST
+Content-Type：text/plain;charset=utf-8</pre>
+            </div>
+            <div class="copy-card">
+              <div class="copy-head">
+                <div class="copy-title">初始化函式</div>
+                <button class="copy-btn" type="button" data-copy-target="copy-functions">複製</button>
+              </div>
+              <pre class="copy-content" id="copy-functions">setupTeachingSheets()
+doGet(e)
+doPost(e)</pre>
+            </div>
+          </div>
+
+          <div class="guide-grid">
+            <div class="guide-card">
+              <h3>你要貼哪些檔案到 GAS？</h3>
+              <p><code>SheetSetup.gs</code> 負責初始化與修復 Sheet 結構。</p>
+              <p><code>Code.gs</code> 負責接收前端請求、驗證登入、讀取設定、呼叫模型與回傳結果。</p>
+            </div>
+            <div class="guide-card">
+              <h3>最快驗證成功的方法</h3>
+              <p>先只填 <code>GEMINI_API_KEY</code>，部署完成後到執行頁用管理者示範流程測試；若已啟用第二組驗證碼，就用它回填 <code>users</code> sheet 中目前的 <code>admin</code> 密碼。</p>
+              <p>等基本迴路通了，再補 <code>KIMI_API_KEY</code> 與 <code>MINIMAX_API_KEY</code>。這樣你在排錯時比較不會一次混進太多變數。</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="architecture">
+          <h2>四、整體架構</h2>
+          <p>本節用系統視角說明這個教學包的模組邊界，幫助新手理解「前端」「後端」「資料表」「模型 API」之間到底怎麼接起來。很多初學者一開始會把 AI 想成只有一個聊天框，但實際上它背後至少有四層。</p>
+          <div class="callout">
+            <p><strong>核心架構：</strong>前端執行頁送出 payload，GAS <code>Code.gs</code> 處理請求，Google Sheet 提供帳號與設定，最後再由後端決定是否呼叫 Gemini / Kimi / MiniMax。</p>
+          </div>
+          <ul>
+            <li>前端：收集使用者輸入，送出 <code>message / aiModel / username / password / systemPrompt / outputCharLimit / keySource / userApiKey</code></li>
+            <li>GAS：驗證使用者、判斷角色、檢查環境變數、讀取後端即時設定、依角色決定回覆模式、呼叫模型、寫入 logs</li>
+            <li>Google Sheet：作為教學版後端資料來源與可視化控制台，提供帳號、前言、結語、動態設定與紀錄</li>
+            <li>模型 API：依 <code>aiModel</code> 轉向 Gemini / Kimi / MiniMax，不同模型有不同端點與限制</li>
+          </ul>
+          <div class="callout">
+            <p><strong>給新手的直覺理解：</strong>前端像「表單與畫面」，GAS 像「中控台」，Google Sheet 像「可視化資料庫」，模型 API 才是真正產生 AI 回覆的地方。把這四層分開想，後面很多概念就會自然很多。</p>
+          </div>
+        </section>
+
+        <section class="section" id="models">
+          <h2>五、支援模型</h2>
+          <p>本節整理目前專案實際支援的模型。對教學來說，這一章很重要，因為學生需要先知道「多模型」不是抽象名詞，而是真的要面對不同供應商、不同端點、不同 key、不同限制。</p>
+          <div class="teaching-box">
+            <p><strong>這章在學什麼：</strong>理解 Router 為什麼存在，以及不同模型供應商之間不會完全相同。</p>
+            <p><strong>實務上拿來做什麼：</strong>讓學生知道前端雖然只是一個下拉選單，後端其實會因此分流到不同 API。</p>
+            <p><strong>哪裡容易踩雷：</strong>以為所有模型都能用同一種端點、同一種參數、同一種回覆格式。</p>
+          </div>
+          <div class="card-grid">
+            <div class="mini-card">
+              <strong>Gemini</strong>
+              <p>目前教學版主要以 Google Gemini 為預設模型。好處是相對穩定，也適合先建立第一條可用迴路。</p>
+            </div>
+            <div class="mini-card">
+              <strong>Kimi</strong>
+              <p>Moonshot 系列模型。重點不是只有模型本身，而是國際版與中國版端點差異、相容格式與參數限制。</p>
+            </div>
+            <div class="mini-card">
+              <strong>MiniMax</strong>
+              <p>MiniMax M2.7。實務上常遇到 Token Plan 與模型綁定限制，因此很適合拿來教供應商差異。</p>
+            </div>
+            <div class="mini-card">
+              <strong>Router 的價值</strong>
+              <p>前端只要傳一個 <code>aiModel</code>，後端就能根據模型名稱選 API Key、端點與模型名稱，這就是 Router 的核心價值。</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="pitfalls">
+          <h2>六、三大踩坑與解法</h2>
+          <p>本節是這個專案非常值得保留的教學內容。因為初學者常以為「API Key 對了就會通」，但多模型整合真正麻煩的，往往是端點、套餐限制與輸出格式這些隱性問題。</p>
+          <div class="card-grid">
+            <div class="mini-card">
+              <strong>坑 1：Kimi 端點混淆</strong>
+              <p>國際版 API Key 如果誤打到中國版網域，就可能出現 <code>401 Invalid Authentication</code>。重點不是 key 錯，而是網域錯。</p>
+              <p><strong>解法：</strong>國際版請走 <code>https://api.moonshot.ai/v1/chat/completions</code>。</p>
+            </div>
+            <div class="mini-card">
+              <strong>坑 2：MiniMax Token Plan 綁模型</strong>
+              <p>有些 MiniMax 金鑰不是「任何模型都能打」，而是綁定某個 Token Plan 與模型。你可能會遇到 key 看起來沒問題，但實際上被套餐限制擋下。</p>
+              <p><strong>解法：</strong>固定對應端點與模型，例如教學版使用 <code>MiniMax-M2.7</code>。</p>
+            </div>
+            <div class="mini-card">
+              <strong>坑 3：CoT / think 汙染 JSON</strong>
+              <p>某些模型會在 JSON 前多吐出 <code>&lt;think&gt;</code> 或其他思考鏈內容，導致後端 <code>JSON.parse()</code> 失敗。</p>
+              <p><strong>解法：</strong>先清掉思考鏈，再抽出真正的 JSON 主體。</p>
+            </div>
+            <div class="mini-card">
+              <strong>教學角度怎麼講</strong>
+              <p>這三個坑很適合拿來教「程式錯誤不一定是你程式碼壞掉，也可能是供應商規格、環境設定或回傳格式不一致」。</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="sheets">
+          <h2>七、Google Sheet 結構</h2>
+          <p>本節整理這個教學包目前使用的 5 張工作表，以及它們各自扮演的角色。對新手來說，這一章非常重要，因為它會幫你看懂：這份 Google Sheet 並不是附屬品，而是系統的一部分。</p>
+          <div class="teaching-box">
+            <p><strong>這章在學什麼：</strong>把資料表當成後端設定的一部分，而不只是靜態表格。</p>
+            <p><strong>實務上拿來做什麼：</strong>讓學生可以不改程式，就先透過 Sheet 理解帳號、設定與輸出控制。</p>
+            <p><strong>哪裡容易踩雷：</strong>表頭被改掉、欄位順序跑掉，導致初始化或讀取失敗；或以為只改 Sheet 名稱沒差，實際上後端會直接找不到。</p>
+          </div>
+          <ul>
+            <li><code>README</code>：操作說明、部署方式、教學規則與環境變數提醒。它像是放在 Sheet 裡的內建使用手冊。</li>
+            <li><code>users</code>：帳號密碼與角色，預設 <code>admin / 123</code>、<code>user / 123</code>。角色限制只在 <code>Use Server Key</code> 下生效；管理者密碼回填也會讀這張表。</li>
+            <li><code>logs</code>：使用者輸入、系統輸出與 debug 紀錄。這張表對教學很有價值，因為你可以直接回頭看每次送出了什麼、拿回了什麼。</li>
+            <li><code>forced_output</code>：前言與結語。它讓你能示範「AI 回覆不是直接裸輸出，而是可以再加上固定的系統文字」。</li>
+            <li><code>runtime_config</code>：後端即時 <code>systemPrompt</code> 與 <code>outputCharLimit</code>。它讓你在不改程式的前提下，直接從 Sheet 調整回覆風格與限制值。</li>
+          </ul>
+          <div class="callout">
+            <p><strong>給新手的直覺理解：</strong><code>users</code> 像登入資料表，<code>runtime_config</code> 像系統設定表，<code>forced_output</code> 像固定片頭片尾，<code>logs</code> 像稽核紀錄，<code>README</code> 則像這個系統內建的說明書。</p>
+          </div>
+        </section>
+
+        <section class="section" id="runtime">
+          <h2>八、後端即時設定</h2>
+          <p>本節說明目前最重要的新設計：系統限制不再全部寫死在程式裡，而是優先從 Google Sheet 讀取。這對教學非常重要，因為你可以讓學生不用改一行 JavaScript，就先體會「後端設定改了，前端結果就會變」。</p>
+          <div class="callout">
+            <p><strong>即時控制邏輯：</strong>先讀 <code>runtime_config</code>，若前端 payload 有傳同名欄位，再以前端值覆蓋。也就是說，系統同時存在「後端預設值」與「前端臨時覆蓋值」兩個層次。</p>
+          </div>
+          <div class="card-grid">
+            <div class="mini-card">
+              <strong><code>system_prompt</code></strong>
+              <p>預設值是教學導向、易讀、偏精簡的回覆風格。它控制的是「AI 會用什麼語氣與方式回答」。</p>
+            </div>
+            <div class="mini-card">
+              <strong><code>output_char_limit</code></strong>
+              <p>預設值：<code>500</code>。回覆內容會在後端被真正截斷，不只是提示文字；若填入 <code>0</code>，代表不限制字數。</p>
+            </div>
+          </div>
+          <div class="callout">
+            <p><strong>教學角度怎麼講：</strong>你可以讓學生先把前端的 <code>System Prompt 覆蓋值</code> 清空，觀察它改讀 <code>runtime_config</code>；再改填前端值，觀察這次改由前端覆蓋。這樣很容易理解什麼叫做多層設定來源。</p>
+          </div>
+        </section>
+
+        <section class="section" id="security">
+          <h2>九、環境變數與安全邊界</h2>
+          <p>本節專門講「哪些東西應該放在 Script Properties、哪些資訊不能直接寫死在公開版前端，以及目前這個專案怎麼做 A / B 驗證」。這章對新手很重要，因為很多人會先把系統做出來，最後才想到安全性。</p>
+          <div class="teaching-box">
+            <p><strong>這章在學什麼：</strong>區分模型金鑰、分享驗證碼、live exec 入口與角色密碼這幾種不同性質的資訊。</p>
+            <p><strong>實務上拿來做什麼：</strong>讓專案可以教學、示範、分享，但又不要把真正危險的入口直接裸露出去。</p>
+            <p><strong>哪裡容易踩雷：</strong>把真實 <code>exec</code> 網址、正式帳密或 server key 直接寫死在 HTML 裡，之後只要頁面外流，就等於把入口一起送出去。</p>
+          </div>
+          <div class="card-grid">
+            <div class="mini-card">
+              <strong>主要 AI 金鑰</strong>
+              <p><code>GEMINI_API_KEY</code>、<code>KIMI_API_KEY</code>、<code>MINIMAX_API_KEY</code> 都應放在 Script Properties，而不是前端。</p>
+            </div>
+            <div class="mini-card">
+              <strong>A 機制：取得範例網址</strong>
+              <p><code>SHARE_EXEC_CODE</code> 驗證通過後，後端才會回傳 <code>SHARE_EXEC_URL</code>。這是受控分享範例網址的設計。</p>
+            </div>
+            <div class="mini-card">
+              <strong>B 機制：載入管理者密碼</strong>
+              <p><code>ADMIN_PASSWORD_CODE</code> 驗證通過後，後端才會去讀 <code>users</code> sheet 中 <code>admin</code> 的目前密碼並回填。</p>
+            </div>
+            <div class="mini-card">
+              <strong>稽核計數器</strong>
+              <p><code>AUDIT_TOTAL_EXECUTIONS</code> 會在每次執行 <code>doGet</code> / <code>doPost</code> 時累加，右上角會顯示成 <code>Audit 119</code> 這種格式。</p>
+            </div>
+          </div>
+          <div class="callout">
+            <p><strong>公開版安全備註：</strong>若這份專案要放到 GitHub 或提供學員下載，真正較高風險的是可直接呼叫後端的 GAS Web App <code>/exec</code> 網址。這份專案主檔已刻意不內建真實網址；建議改用手動貼上、受控發放，或另外建立專用測試端點。</p>
+          </div>
+        </section>
+
+        <section class="section" id="flow">
+          <h2>十、執行流程</h2>
+          <p>本節用步驟方式說明使用者從按下送出，到看到回覆結果，中間系統做了哪些事。這一段很適合你後面再補流程圖，因為現在文字結構已經先整理成清楚的步驟。</p>
+          <ol>
+            <li>前端執行頁收集使用者輸入與測試參數。</li>
+            <li>GAS <code>Code.gs</code> 解析 payload，決定模型與 key 狀態，並先確認目前選到的模型在環境變數裡是否有對應金鑰。</li>
+            <li>若有帳號密碼，就到 <code>users</code> 檢查角色、密碼與啟用狀態。</li>
+            <li>若目前是 <code>Use Server Key</code>，才套用角色分流：<code>admin</code> 回傳完整教學版回覆，<code>user</code> 進入受限教學回覆。</li>
+            <li>若目前是 <code>Use My API Key</code>，則不套用 admin / user 限制，直接走完整回覆。</li>
+            <li>從 <code>runtime_config</code> 讀取後端限制，必要時再被前端覆蓋。</li>
+            <li>從 <code>forced_output</code> 取出前言與結語，並組裝成最後的混合輸出。</li>
+            <li>若走完整模型模式，就依 <code>aiModel</code> 分流到 Gemini / Kimi / MiniMax。</li>
+            <li>後端把結果、debug 資訊與 <code>replySections</code> 一起回傳給前端。</li>
+            <li>前端把回覆整理成可教學的顯示格式：前言、AI 回覆、後語，以及額外的系統摘要。</li>
+          </ol>
+        </section>
+
+        <section class="section" id="teaching">
+          <h2>十一、教學建議</h2>
+          <p>本節提供實際帶課時的使用建議，幫助你把這個專案轉成可操作、可展示、可拆解的教材。因為這個專案不只是能跑，而是真的很適合拿來講「AI 系統是怎麼被組起來的」。</p>
+          <div class="card-grid">
+            <div class="mini-card">
+              <strong>第一階段</strong>
+              <p>先只講 Google Sheet 結構與 <code>SheetSetup.gs</code> 的自我修復邏輯，讓學生先知道資料表不是附屬品，而是後端的一部分。</p>
+            </div>
+            <div class="mini-card">
+              <strong>第二階段</strong>
+              <p>再帶學生打開執行頁，實際送出訊息與觀察 debug 回傳，特別是右上角的 <code>System Summary</code>。</p>
+            </div>
+            <div class="mini-card">
+              <strong>第三階段</strong>
+              <p>修改 <code>forced_output</code> 與 <code>runtime_config</code>，讓學生看到系統如何在不改前端的情況下即時變化。</p>
+            </div>
+            <div class="mini-card">
+              <strong>第四階段</strong>
+              <p>最後再講如何把教學版替換成真的模型 API Router，並用 Kimi / MiniMax 的踩坑案例講供應商差異。</p>
+            </div>
+          </div>
+          <div class="callout">
+            <p><strong>下一步：</strong>實際操作請打開執行頁，該頁已專門保留給登入、測試與結果檢查使用。</p>
+            <div class="action-links">
+              <a class="action-link" href="./playground.html">前往執行頁</a>
+              <a class="action-link" href="https://drive.google.com/file/d/1h9Gs0iRiEmC5PcZprfXcejp6d7RRSOd1/view?usp=sharing" target="_blank" rel="noopener noreferrer">案例檔下載</a>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="summary">
+          <h2>十二、結尾總結</h2>
+          <p>如果你要把整份說明濃縮成課堂最後 1 到 2 分鐘的總結，可以直接用這一段。</p>
+          <div class="callout">
+            <p><strong>這個專案的核心重點可以濃縮成四句話：</strong></p>
+            <p>第一，前端只負責收集資料與送出參數，真正的判斷和分流在後端。</p>
+            <p>第二，Google Sheet 不只是表格，而是帳號、設定、前言後語與 logs 的資料中心。</p>
+            <p>第三，多模型整合真正困難的地方，不是只有換模型名稱，而是端點、套餐限制、輸出格式與安全邊界。</p>
+            <p>第四，當你把角色分流、runtime 設定、A / B 驗證與 audit 計數器都加進來後，它就已經不是單純測 API 的頁面，而是一個很完整的教學型 AI 系統樣板。</p>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <footer class="footer">
+      <div>Last Updated: 2026/4/7</div>
+      <div class="copyright">Force Cheng × FALO｜版本 v1.02｜最後更新時間 2026/4/7</div>
+    </footer>
+  </div>
+  <script>
+    const copyButtons = document.querySelectorAll("[data-copy-target]");
+
+    copyButtons.forEach((button) => {
+      button.addEventListener("click", async () => {
+        const targetId = button.getAttribute("data-copy-target");
+        const target = document.getElementById(targetId);
+        if (!target) return;
+
+        const originalLabel = button.textContent;
+        try {
+          await navigator.clipboard.writeText(target.textContent || "");
+          button.textContent = "已複製";
+        } catch (error) {
+          button.textContent = "複製失敗";
+        }
+
+        window.setTimeout(() => {
+          button.textContent = originalLabel;
+        }, 1600);
+      });
+    });
+  </script>
+</body>
+</html>
